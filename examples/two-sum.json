@@ -1,0 +1,14 @@
+{
+  "id": "1",
+  "slug": "two-sum",
+  "title": "Two Sum (local example)",
+  "difficulty": "Easy",
+  "method": "twoSum",
+  "params": ["nums", "target"],
+  "description": "Local demonstration: return indices of two numbers whose sum is target. Add the official problem text manually if desired.",
+  "template": "class Solution:\n    def twoSum(self, nums: list[int], target: int) -> list[int]:\n        raise NotImplementedError\n",
+  "cases": [
+    {"args": [[2, 7, 11, 15], 9], "expected": [0, 1]},
+    {"args": [[3, 2, 4], 6], "expected": [1, 2]}
+  ]
+}

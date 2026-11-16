@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zed-leetcode"
+version = "0.1.0"
+description = "A small local LeetCode workspace CLI"
+requires-python = ">=3.11"
+
+[project.optional-dependencies]
+login = ["playwright>=1.45,<2", "keyring>=25,<26"]
+
+[project.scripts]
+lc = "zed_leetcode.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
