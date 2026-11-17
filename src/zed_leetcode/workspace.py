@@ -13,11 +13,30 @@ class WorkspaceError(Exception):
     pass
 
 
+def default_root() -> Path:
+    """Keep managed data independent of the caller's current directory."""
+    return Path.home() / '.local' / 'share' / 'zed-leetcode' / 'workspace'
+
+
+def get_root(explicit: Path | None = None) -> Path:
+    if explicit is not None:
+        root = explicit.expanduser().resolve()
+        if not (root / '.leetcode' / 'config.toml').is_file():
+            raise WorkspaceError(f'Workspace not initialized: {root}. Run lc --workspace <path> init first.')
+        return root
+    root = default_root()
+    if not (root / '.leetcode' / 'config.toml').exists():
+        root.mkdir(parents=True, exist_ok=True)
+        init(root, 'https://leetcode.cn')
+    return root.resolve()
+
+
 def root_from(path: Path) -> Path:
+    """Find a legacy workspace for explicit migration or callers of this API."""
     for root in (path.resolve(), *path.resolve().parents):
         if (root / '.leetcode/config.toml').is_file():
             return root
-    raise WorkspaceError('No workspace found. Run lc init first.')
+    raise WorkspaceError('No workspace found.')
 
 
 def read_config(root: Path) -> dict[str, Any]:

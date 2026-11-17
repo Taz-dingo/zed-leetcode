@@ -82,7 +82,7 @@ class LeetCodeClient:
 
     def graphql(self, query: str, variables: dict[str, Any], name: str) -> dict[str, Any]:
         body = json.dumps({'query': query, 'variables': variables, 'operationName': name}).encode()
-        request = urllib.request.Request(self.site + '/graphql/', data=body, headers={'Content-Type': 'application/json', 'User-Agent': 'zed-leetcode/0.1'})
+        request = urllib.request.Request(self.site + '/graphql/', data=body, headers={'Content-Type': 'application/json', 'User-Agent': 'leetcli-cn/0.1'})
         try:
             with urllib.request.urlopen(request, timeout=15) as response:
                 result = json.load(response)
@@ -149,7 +149,7 @@ class LeetCodeClient:
             question_id = str(q.get('questionId', '')) if isinstance(q, dict) else ''
         if not str(question_id).isdigit():
             raise WorkspaceError('Missing or invalid internal question ID; fetch the problem again.')
-        headers = {'Content-Type': 'application/json', 'User-Agent': 'zed-leetcode/0.1',
+        headers = {'Content-Type': 'application/json', 'User-Agent': 'leetcli-cn/0.1',
                    'Cookie': f'LEETCODE_SESSION={session}; csrftoken={csrf}', 'x-csrftoken': csrf,
                    'Origin': self.site, 'Referer': f'{self.site}/problems/{slug}/'}
         opener = urllib.request.build_opener(NoRedirect())
