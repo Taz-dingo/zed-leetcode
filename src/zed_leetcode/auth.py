@@ -25,7 +25,7 @@ def backend() -> Any:
         from keyring.backends.macOS import Keyring
         store = keyring.get_keyring()
     except ImportError:
-        raise WorkspaceError('Login dependencies missing. Install zed-leetcode[login].') from None
+        raise WorkspaceError('Login dependencies missing. Install leetcli-cn[login].') from None
     if not isinstance(store, Keyring):
         raise WorkspaceError('macOS Keychain backend unavailable; refusing to store credentials in another backend.')
     return store
@@ -95,7 +95,7 @@ def login(timeout: float = 300) -> None:
     try:
         from playwright.sync_api import Error as PlaywrightError, sync_playwright
     except ImportError:
-        raise WorkspaceError('Login dependencies missing. Install zed-leetcode[login].') from None
+        raise WorkspaceError('Login dependencies missing. Install leetcli-cn[login].') from None
     print('Opening an isolated browser. Log in to leetcode.cn there; this window has no existing browser profile.', flush=True)
     print('Waiting up to 5 minutes. Close the window or press Ctrl-C to cancel.', flush=True)
     try:

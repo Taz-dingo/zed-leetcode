@@ -1,31 +1,38 @@
-# zed-leetcode
+# LeetCLI CN
 
 A small Python 3.11+ CLI for local algorithm practice in Zed or any editor. No runtime dependencies. China-site search, fetch and submission use undocumented website endpoints, which may change or reject access. Login and submission have been verified with one real China-site account and a Two Sum submission; behavior is not guaranteed. Use only where permitted. See [API research](docs/api-research.md).
 
 ## Install
 
 ```sh
-cd /path/to/zed-leetcode
+cd /path/to/leetcli-cn-source
 uv tool install '.[login]'  # includes isolated-browser login and macOS Keychain support
 # alternatively: python3 -m venv .venv && .venv/bin/pip install .
 lc --help
 ```
 
-For the venv alternative, use its absolute `bin/lc` path or activate it. To run tests on the project itself: `PYTHONPATH=src python3 -m unittest discover -s tests -v`.
+This project has not been published to PyPI. Install from this checkout; do not install the unrelated `leetcli` package from PyPI. If upgrading from the old `zed-leetcode` uv tool, first run `uv tool uninstall zed-leetcode` to avoid an `lc` executable conflict, then install this checkout. Uninstalling the old tool does not delete its Keychain credentials or workspace files. For the venv alternative, use its absolute `bin/lc` path or activate it. To run tests on the project itself: `PYTHONPATH=src python3 -m unittest discover -s tests -v`.
 
-## Start a workspace
+## Start practicing
+
+From **any directory**, including an unrelated Git repository:
 
 ```sh
-mkdir -p ~/leetcode && cd ~/leetcode
-lc init                 # defaults to China (leetcode.cn); use --site global for leetcode.com
 lc search "两数之和"
-lc fetch two-sum        # or import: lc fetch --import-file /path/to/example.json
+lc fetch two-sum        # or lc fetch --import-file /path/to/example.json
+lc open                 # open the managed workspace and active problem in Zed
+lc test
+lc submit
 lc list
-lc status
 lc use 1
+lc status               # show workspace path and active problem
 ```
 
-`lc init` does not overwrite an existing workspace or README. All later commands find the workspace from the current directory or a parent. Imports create `problems/0001-two-sum/{problem.md,solution.py,test_cases.json,metadata.json}` and activate it. Existing problem files are never overwritten unless `--force` is passed; `--force` replaces all four, including your solution. Back it up first.
+The first workspace command automatically creates `~/.local/share/zed-leetcode/workspace/`, using the China site. The legacy directory name is intentionally retained to preserve existing data after the rename. Nothing is created in the current directory. Your solutions are ordinary files in that workspace; back them up if needed. `lc init` is optional and idempotent for an existing workspace; `lc init --site global` selects the international site only when creating a new one (online search and submission currently support China only).
+
+To deliberately use an existing or separate workspace, put the global option **before** the command: `lc --workspace /path/to/workspace status`. To create a custom workspace, use `lc --workspace /path/to/workspace init` first. This explicit opt-in may write there; never point it at an unrelated repository accidentally. Old workspaces are not automatically discovered, moved or deleted: select them with `--workspace` to retain access. Do not move existing solution files without backing them up.
+
+Problems are saved under `problems/0001-two-sum/{problem.md,solution.py,test_cases.json,metadata.json}`. Existing problem files are never overwritten unless `--force` is passed; `--force` replaces all four, including your solution. Back it up first.
 
 Create an import JSON following `examples/two-sum.json`: required fields are numeric `id`, hyphenated alphanumeric `slug`, `title`, `difficulty`, `method`, and `params` (argument names in order). Optionally supply `description`, `template` (complete Python3 solution stub), and `cases`. If no template is supplied, a `Solution` method stub is generated. Without cases, a TODO is created, not an invented answer. You may manually transfer information you are entitled to use from the website. For online fetch, the website's Python3 snippet is used when available. Simple single-line JSON examples are extracted conservatively; review the resulting test cases. Unsupported examples are left for manual completion.
 

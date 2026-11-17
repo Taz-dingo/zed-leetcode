@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -14,8 +15,9 @@ SITES = {'global': 'https://leetcode.com', 'cn': 'https://leetcode.cn'}
 
 def parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog='lc', description='A small local LeetCode workspace CLI')
+    p.add_argument('--workspace', type=Path, help='explicit workspace path (default: managed user workspace)')
     sub = p.add_subparsers(dest='command', required=True)
-    init = sub.add_parser('init', help='initialize workspace in current directory')
+    init = sub.add_parser('init', help='initialize the managed or explicitly selected workspace')
     init.add_argument('--site', choices=SITES, default='cn', help='site (default: cn)')
     search = sub.add_parser('search', help='search online (first 50 results)')
     search.add_argument('keyword', nargs='?', default='')
@@ -24,7 +26,7 @@ def parser() -> argparse.ArgumentParser:
     fetch.add_argument('identifier', nargs='?')
     fetch.add_argument('--import-file', type=Path, help='import a manually prepared JSON file')
     fetch.add_argument('--force', action='store_true', help='overwrite existing problem files')
-    for name in ('use', 'test', 'submit'):
+    for name in ('use', 'test', 'submit', 'open'):
         command = sub.add_parser(name)
         command.add_argument('identifier', nargs=None if name == 'use' else '?')
         if name == 'test':
@@ -47,10 +49,15 @@ def main() -> int:
             print('Removed stored login. Environment variables, if set, still take precedence.')
             return 0
         if args.command == 'init':
-            workspace.init(Path.cwd(), SITES[args.site])
-            print(f'Initialized workspace: {Path.cwd()}')
+            root = (args.workspace or workspace.default_root()).expanduser().resolve()
+            if (root / '.leetcode/config.toml').exists():
+                print(f'Workspace already initialized: {root}')
+                return 0
+            root.mkdir(parents=True, exist_ok=True)
+            workspace.init(root, SITES[args.site])
+            print(f'Initialized workspace: {root}')
             return 0
-        root = workspace.root_from(Path.cwd())
+        root = workspace.get_root(args.workspace)
         config = workspace.read_config(root)
         site = config.get('site')
         if site not in SITES.values():
@@ -83,10 +90,22 @@ def main() -> int:
                 print(f"{marker} {m['id']}  {m['title']}  {m['difficulty']}  {m['slug']}")
             if not items:
                 print('No local problems.')
+        elif args.command == 'status':
+            print(f'Workspace: {root}')
+            if config.get('active'):
+                path, metadata = workspace.resolve(root, None)
+                print(f"Active: {metadata['id']} {metadata['title']} ({path})")
+            else:
+                print('Active: none')
         else:
             path, metadata = workspace.resolve(root, getattr(args, 'identifier', None))
-            if args.command == 'status':
-                print(f"Active: {metadata['id']} {metadata['title']} ({path})")
+            if args.command == 'open':
+                try:
+                    subprocess.run(['zed', str(root), str(path / 'problem.md'), str(path / 'solution.py')], check=True)
+                except FileNotFoundError:
+                    raise workspace.WorkspaceError('Zed CLI not found. Install the zed command or open the workspace manually.') from None
+                except subprocess.CalledProcessError:
+                    raise workspace.WorkspaceError('Zed could not open the workspace.') from None
             elif args.command == 'use':
                 workspace.activate(root, metadata['slug'])
                 print(f"Active: {metadata['id']} {metadata['title']}")
